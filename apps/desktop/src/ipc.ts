@@ -6,6 +6,7 @@ import type { DesktopChannelBridge, DesktopChannelState } from '@deepseek-ai/dsh
 import type { DesktopKeyboardApi, DesktopShortcutsApi } from '@deepseek-ai/dsh-client-shortcuts/protocol'
 import type { IpcMainInvokeEvent } from 'electron'
 import type { DesktopBrowserBridge } from '@deepseek-ai/dsh-client-ui-sidebar-browser/types'
+import type { DesktopBrowserCdpBridge } from '@deepseek-ai/dsh-client-ui-sidebar-browser/types'
 import type { DesktopFileDrag } from '@deepseek-ai/dsh-util-file-drag'
 
 /** IPC channel names kept private to the desktop application bundle. */
@@ -26,6 +27,13 @@ export const DESKTOP_IPC = {
   browserAcquire: 'dsh-desktop:browser-acquire',
   browserRelease: 'dsh-desktop:browser-release',
   browserOpenRequested: 'dsh-desktop:browser-open-requested',
+  browserCdpListLeases: 'dsh-desktop:browser-cdp-list-leases',
+  browserCdpAttach: 'dsh-desktop:browser-cdp-attach',
+  browserCdpDetach: 'dsh-desktop:browser-cdp-detach',
+  browserCdpSendCommand: 'dsh-desktop:browser-cdp-send-command',
+  browserCdpSubscribe: 'dsh-desktop:browser-cdp-subscribe',
+  browserCdpUnsubscribe: 'dsh-desktop:browser-cdp-unsubscribe',
+  browserCdpEvent: 'dsh-desktop:browser-cdp-event',
   directoryPick: 'dsh-desktop:directory-pick',
   fileDragPrepare: 'dsh-desktop:file-drag-prepare',
   fileDragCancel: 'dsh-desktop:file-drag-cancel',
@@ -94,6 +102,11 @@ export interface DshDesktopProductApi {
   readonly fileActions: DesktopFileActions
   readonly protocolVersion: 1
   readonly browser: DesktopBrowserBridge
+  /**
+   * Minimal allowlisted CDP bridge for a Sidebar guest (Route C spike).
+   * Only present in the fork build; the upstream product API has no CDP surface.
+   */
+  readonly cdp: DesktopBrowserCdpBridge
   readonly fileDrag: DesktopFileDrag
   readonly keyboard: DesktopKeyboardApi
   readonly shortcuts: DesktopShortcutsApi

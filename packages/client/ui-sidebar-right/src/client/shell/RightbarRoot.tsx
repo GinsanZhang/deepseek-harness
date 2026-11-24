@@ -32,7 +32,13 @@ function SessionView({ view, visible, SessionProvider, renderSlot, mountView, wi
  * @returns the foreground and retained background Sidebars.
  */
 export function RightbarRoot({ usePanelInfo, useViews, ...props }: RootProps) {
-  const visible = usePanelInfo(info => info.activePanelId === null)
+  // The Skill Factory workbench is a main panel, but its teaching surface
+  // is the Sidebar browser guest: keep the rightbar visible while the
+  // workbench is active (Route C; the guest stays mounted either way,
+  // this only affects visibility). A general "panels that keep the
+  // rightbar" mechanism is a follow-up; for this PoC fork the one panel
+  // id is named explicitly.
+  const visible = usePanelInfo(info => info.activePanelId === null || info.activePanelId === 'skill-factory-workbench')
   const views = useViews(value => value)
   return <>{views.map(view => <SessionView key={view.sessionId} {...props} view={view} visible={visible} />)}</>
 }

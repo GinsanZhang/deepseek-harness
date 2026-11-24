@@ -42,6 +42,40 @@ export class DesktopBrowserGuests {
   }
 
   /**
+   * Resolve the guest WebContents for a lease, validating ownership.
+   * Route C spike: the CDP bridge needs the guest to attach a debugger.
+   * @param owner - authenticated IPC sender; must own the lease.
+   * @param id - lease received over IPC.
+   * @returns the guest WebContents, or undefined when the lease exists but
+   * the guest is not yet bound (acquire done, first dom-ready not fired).
+   * @throws when the lease id is malformed, unknown, or owned by another window.
+   */
+  guestFor(owner: WebContents, id: unknown): WebContents | undefined {
+    if (typeof id !== 'string') throw new Error('desktop browser: invalid guest lease')
+    const key = id as DesktopBrowserLeaseId
+    const lease = this.leases.get(key)
+    if (lease === undefined) throw new Error('desktop browser: unknown guest lease')
+    if (lease.owner !== owner) throw new Error('desktop browser: guest belongs to another window')
+    return lease.guest
+  }
+
+  /**
+   * List the lease ids this window owns. The Skill Factory workbench
+   * (main-window renderer) needs the lease to drive the CDP bridge, but
+   * the lease is private to the Sidebar guest implementation; a caller
+   * only ever learns its own leases, never another window's.
+   * @param owner - authenticated IPC sender.
+   * @returns the lease ids owned by this window, in acquire order.
+   */
+  leasesFor(owner: WebContents): DesktopBrowserLeaseId[] {
+    const ids: DesktopBrowserLeaseId[] = []
+    for (const [id, lease] of this.leases) {
+      if (lease.owner === owner) ids.push(id)
+    }
+    return ids
+  }
+
+  /**
    * Release only a lease issued to this application window; workspace storage survives.
    * @param owner - authenticated IPC sender.
    * @param id - lease received over IPC.
